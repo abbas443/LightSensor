@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "209628777259",
+    "firebase_url": "https://lightsensor-23a23.firebaseio.com",
+    "project_id": "lightsensor-23a23",
+    "storage_bucket": "lightsensor-23a23.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:209628777259:android:475be38a5973d184",
+        "android_client_info": {
+          "package_name": "com.example.lightsensor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "209628777259-db8d7lqvnn3bh7g1oukrti216edgmgfb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.lightsensor",
+            "certificate_hash": "01dddfc3e60e3f243456fd39ade8a08b3c1973c8"
+          }
+        },
+        {
+          "client_id": "209628777259-up7k5achb6o1jk6hr350pl0oh31jje4i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmMUueI1xll23yv2uScnkL2gAcgnyAJ7A"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "209628777259-up7k5achb6o1jk6hr350pl0oh31jje4i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
