@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -35,22 +36,8 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener{
 
-    public static void getCalories() {
-        try {
-            Document document = Jsoup.connect("https://www.google.com/search?q=dublin+temperature").get();
+    TextView texx;
 
-            Element element =  document.select("div[aria-live]").first();
-            System.out.println(element.text());
-            Log.d(TAG, "Time Stamp: "  + " Light: " );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    public static void main(String[] args) {
-        MainActivity.getCalories();
-
-
-    }
     private static final String TAG = "Sensor";
 
 
@@ -71,6 +58,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        texx=(TextView) findViewById(R.id.tex1);
+        Button but=(Button) findViewById(R.id.but1);
+
+        but.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new doit().execute();
+            }
+        });
+
 
         recyclerView = (RecyclerView)findViewById(R.id.recycler_view);
         firebaseDatabase = FirebaseDatabase.getInstance();
@@ -131,16 +130,60 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             light.setText(" "+sensorEvent.values[0]);
             String Light = Float.toString(sensorEvent.values[0]);
             //Log.d(TAG, "Time Stamp: " + ts + " Light: " + sensorEvent.values[0]);
-            Post post = new Post(ts,Light);
+            //Post post = new Post(ts,Light);
 
-            databaseReference.push()
-                    .setValue(post);
-            adapter.notifyDataSetChanged();
+            //databaseReference.push()
+            //        .setValue(post);
+            //adapter.notifyDataSetChanged();
 
 
         }
 
 
+    }
+    public class doit extends AsyncTask<Void,Void,Void> {
+        String words;
+
+
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+
+            try {
+
+                Document doc = Jsoup.connect("https://www.google.com/search?q=dublin+temperature").get();
+
+                Element element =  doc.select("div#wob_dts").first();
+                System.out.println(element.text());
+
+
+                words=element.text();
+                Long tsLong = System.currentTimeMillis()/1000;
+                String ts = tsLong.toString();
+
+                Long tssLong = System.currentTimeMillis();
+                String tss = tssLong.toString();
+
+
+                Post post = new Post(ts,words);
+
+                databaseReference.push()
+                        .setValue(post);
+                adapter.notifyDataSetChanged();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            texx.setText(words);
+        }
     }
 
     @Override
