@@ -1,6 +1,7 @@
 package com.example.lightsensor;
 
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -17,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -28,13 +30,15 @@ import org.jsoup.select.Elements;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener{
+public class MainActivity extends AppCompatActivity implements SensorEventListener, View.OnClickListener {
 
     TextView texx;
 
@@ -44,6 +48,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager sensorManager;
     private Sensor mLight;
     TextView light;
+    public String LT;
+    private Button ShowData;
 
 
     RecyclerView recyclerView;
@@ -51,8 +57,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //Firebase
     FirebaseDatabase firebaseDatabase;
     DatabaseReference databaseReference;
+    FirebaseAuth firebaseAuth;
+    FirebaseUser firebaseUser;
+
+
     FirebaseRecyclerOptions<Post> options;
     FirebaseRecyclerAdapter<Post,MyRecyclerViewHolder> adapter;
+    long time;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,10 +71,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
 
 
-        texx=(TextView) findViewById(R.id.tex1);
-        Button but=(Button) findViewById(R.id.but1);
 
-        but.setOnClickListener(new View.OnClickListener() {
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+
+        //Toast.makeText(this, firebaseUser.getEmail(), Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Email "+System.currentTimeMillis());
+        time = System.currentTimeMillis();
+
+
+        texx=(TextView) findViewById(R.id.tex1);
+        Button Temp=(Button) findViewById(R.id.but1);
+        Button ShowData = (Button) findViewById(R.id.button2);
+
+        ShowData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(MainActivity.this, DataRetrieved.class);
+                startActivity(intent);
+                finish();
+
+
+            }
+        });
+
+        Temp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 new doit().execute();
@@ -75,7 +108,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase.getReference("EDMT_FIREBASE");
 
+
+
         light = (TextView) findViewById(R.id.light);
+
 
         Log.d(TAG, "onCreate: Initializing Sensor Services");
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -129,18 +165,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             light.setText(" "+sensorEvent.values[0]);
             String Light = Float.toString(sensorEvent.values[0]);
+            LT=Light;
             //Log.d(TAG, "Time Stamp: " + ts + " Light: " + sensorEvent.values[0]);
-            //Post post = new Post(ts,Light);
+            Post post = new Post(ts,Light);
 
             //databaseReference.push()
             //        .setValue(post);
-            //adapter.notifyDataSetChanged();
+            adapter.notifyDataSetChanged();
 
 
         }
 
 
     }
+
+    @Override
+    public void onClick(View view) {
+        if(view == ShowData){
+            //Toast.makeText(this,"Abbas", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Abbas "+System.currentTimeMillis());
+            Intent intent = new Intent(MainActivity.this, DataRetrieved.class);
+            startActivity(intent);
+            finish();
+        }
+
+    }
+
     public class doit extends AsyncTask<Void,Void,Void> {
         String words;
 
@@ -154,8 +204,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 Document doc = Jsoup.connect("https://www.google.com/search?q=dublin+temperature").get();
 
-                Element element =  doc.select("div#wob_dts").first();
-                System.out.println(element.text());
+                Element element =  doc.select("#wob_tm").first();
+                System.out.println(element.text()+"  °C");
 
 
                 words=element.text();
@@ -165,11 +215,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Long tssLong = System.currentTimeMillis();
                 String tss = tssLong.toString();
 
+                Log.d(TAG, "Abbas: " + ts + " Light: " + LT);
+                String temperature = (words+" °C");
+
 
                 Post post = new Post(ts,words);
+                databaseReference.child(firebaseUser.getUid()).child(ts).child("Temperature").setValue(temperature);
+                databaseReference.child(firebaseUser.getUid()).child(ts).child("Light").setValue(LT);
 
-                databaseReference.push()
-                        .setValue(post);
+                //databaseReference.push()
+                 //       .setValue(post);
                 adapter.notifyDataSetChanged();
 
             } catch (IOException e) {
